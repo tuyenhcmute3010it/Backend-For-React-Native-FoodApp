@@ -9,13 +9,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
-import { genSaltSync, hashSync } from 'bcryptjs';
+import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { codeVerify } from 'src/utils/utils';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: SoftDeleteModel<UserDocument>,
+    private configService: ConfigService,
   ) {}
   create(createUserDto: CreateUserDto) {
     return 'This action adds a new user';
@@ -59,6 +61,7 @@ export class UsersService {
       codeExpired: Date.now() + 5 * 60 * 1000,
       code: code,
       password: hashPassword,
+      avatar: 'default-avatar.jpg',
     });
     return {
       _id: user._id,
@@ -70,8 +73,6 @@ export class UsersService {
     let userCheck = await this.userModel.findOne({
       email: verifyCode.email,
     });
-    console.log(userCheck);
-    console.log(userCheck?.code);
     if (userCheck?.code !== verifyCode.code) {
       console.log(verifyCode.code);
 
@@ -84,9 +85,12 @@ export class UsersService {
         `Verification code has expired, please request a new one.`,
       );
     }
-    return await this.userModel.updateOne({
-      status: true,
-    });
+    return await this.userModel.updateOne(
+      { _id: userCheck._id },
+      {
+        status: true,
+      },
+    );
   }
 
   async verifyEmail(verifyEmail: VerifyEmail) {
@@ -100,7 +104,7 @@ export class UsersService {
       {
         ...verifyEmail,
         code: code,
-        codeExpired: Date.now() + 60 * 60 * 5,
+        codeExpired: Date.now() + 5 * 60 * 1000,
       },
     );
 
@@ -109,5 +113,15 @@ export class UsersService {
       message: 'Verification code updated',
       updateResult,
     };
+  }
+
+  findOneByUserName(username: string) {
+    return this.userModel.findOne({
+      email: username,
+    });
+  }
+
+  isValidPassword(password: string, hashPassword: string) {
+    return compareSync(password, hashPassword); // true
   }
 }

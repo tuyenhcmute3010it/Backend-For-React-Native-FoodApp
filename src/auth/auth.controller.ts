@@ -6,45 +6,27 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Res,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import {
   RegisterUserDto,
   VerifyCode,
   VerifyEmail,
 } from 'src/users/dto/create-user.dto';
-import { Public, ResponseMessage } from 'src/decorator/customize';
+import { Public, ResponseMessage, User } from 'src/decorator/customize';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Request as RequestExpress, Response, response } from 'express';
+import { LocalAuthGuard } from './local-auth.guard';
+import { IUser } from 'src/users/users.interface';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
-  }
   // register
   @Public()
   @Post('/register')
@@ -64,5 +46,21 @@ export class AuthController {
   @Post('/verify-email')
   verifyEmail(@Body() verifyEmail: VerifyEmail) {
     return this.authService.verifyEmail(verifyEmail);
+  }
+  @Public()
+  @UseGuards(LocalAuthGuard)
+  @UseGuards(ThrottlerGuard)
+  // @Throttle(5, 60)
+  // @ApiBody({ type: UserLoginDto })
+  @ResponseMessage('User Login')
+  @Post('/login')
+  handleLogin(@Req() req, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(req.user, response);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/account')
+  @ResponseMessage('Get user information')
+  async getAccount(@User() user: IUser) {
+    return this.authService.getAccount(user);
   }
 }

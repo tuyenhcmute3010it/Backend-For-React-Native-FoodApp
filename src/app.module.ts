@@ -1,20 +1,26 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
-import { AuthModule } from './auth/auth.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { MailModule } from './mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { Throttle, ThrottlerModule } from '@nestjs/throttler';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot({
+      ttl: 60, // trong 60s chay toi da 10 lan
+      limit: 10,
+    }),
     MongooseModule.forRootAsync({
-      imports: [
-        ConfigModule.forRoot({
-          isGlobal: true, // giúp bạn không cần import lại ở từng module
-        }),
-      ],
+      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
         connectionFactory: (connection) => {
@@ -24,11 +30,21 @@ import { MailModule } from './mail/mail.module';
       }),
       inject: [ConfigService],
     }),
-    AuthModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UsersModule,
+    AuthModule,
     MailModule,
+    RestaurantsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: JwtAuthGuard,
+    // },
+  ],
 })
 export class AppModule {}

@@ -9,16 +9,20 @@ import { AuthGuard } from '@nestjs/passport';
 import cookieParser = require('cookie-parser');
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { TransformInterceptor } from './core/transform.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
   const reflector = app.get(Reflector);
-
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
   app.useStaticAssets(join(__dirname, '..', 'public')); // js, css ,images
   app.setBaseViewsDir(join(__dirname, '..', 'views')); // view
   app.setViewEngine('ejs');
   //
+  app.useGlobalInterceptors(new TransformInterceptor(reflector)); // 👈
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -72,7 +76,6 @@ async function bootstrap() {
   if (port === undefined) {
     throw new Error('PORT is not defined in environment variables');
   }
-  console.log('lac da bt di');
-  await app.listen(port);
+  await app.listen(port!);
 }
 bootstrap();
