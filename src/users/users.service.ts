@@ -12,6 +12,7 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { codeVerify } from 'src/utils/utils';
 import { ConfigService } from '@nestjs/config';
+import { Public } from 'src/decorator/customize';
 
 @Injectable()
 export class UsersService {
@@ -23,8 +24,9 @@ export class UsersService {
     return 'This action adds a new user';
   }
 
+  @Public()
   findAll() {
-    return `This action returns all users`;
+    return this.userModel.find();
   }
 
   findOne(id: number) {

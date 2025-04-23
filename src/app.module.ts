@@ -12,6 +12,8 @@ import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { MenusModule } from './menus/menus.module';
+import { MenuitemsModule } from './menuitems/menuitems.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -37,6 +39,10 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
     AuthModule,
     MailModule,
     RestaurantsModule,
+    MenusModule,
+    MenusModule,
+    MenuitemsModule,
+    MenuitemsModule,
   ],
   controllers: [AppController],
   providers: [

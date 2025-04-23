@@ -21,28 +21,33 @@ export class RestaurantsController {
     return this.restaurantsService.create(createRestaurantDto);
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.restaurantsService.findAll();
-  // }
+  @Get()
+  findAll() {
+    return this.restaurantsService.findAll();
+  }
+
   @Public()
-  @Get('newcomer')
+  @Post('newcomer')
   @ResponseMessage('Get list restaurant new comer')
   findNewComer() {
     return this.restaurantsService.findNewComer();
   }
-  @Get('top-rating')
+  @Public()
+  @Post('top-rating')
+  @ResponseMessage('Get list restaurant top rating')
   findTopRating() {
     return this.restaurantsService.findTopRating();
   }
-  @Get('top-freeship')
+  @Public()
+  @Post('top-freeship')
   findTopFreeship() {
     return this.restaurantsService.findTopFreeship();
   }
 
+  @ResponseMessage('Fetch restaurant by id')
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.restaurantsService.findOne(+id);
+    return this.restaurantsService.findOne(id);
   }
 
   @Patch(':id')
