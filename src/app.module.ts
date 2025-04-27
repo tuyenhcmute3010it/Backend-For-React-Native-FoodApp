@@ -14,6 +14,7 @@ import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { MenusModule } from './menus/menus.module';
 import { MenuitemsModule } from './menuitems/menuitems.module';
+import { OrdersModule } from './orders/orders.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -43,6 +44,7 @@ import { MenuitemsModule } from './menuitems/menuitems.module';
     MenusModule,
     MenuitemsModule,
     MenuitemsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

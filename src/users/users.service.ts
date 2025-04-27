@@ -2,10 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CreateUserDto,
   RegisterUserDto,
+  UpdatePassword,
   VerifyCode,
   VerifyEmail,
 } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -13,6 +13,9 @@ import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { codeVerify } from 'src/utils/utils';
 import { ConfigService } from '@nestjs/config';
 import { Public } from 'src/decorator/customize';
+import { UpdateOrderDto } from 'src/orders/dto/update-order.dto';
+import { IUser } from './users.interface';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -33,8 +36,17 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(updateUserDto: UpdateUserDto) {
+    console.log('update', updateUserDto);
+    await this.userModel.updateOne(
+      { _id: updateUserDto._id },
+      { ...updateUserDto },
+    );
+    return {
+      user: {
+        ...updateUserDto,
+      },
+    };
   }
 
   remove(id: number) {
@@ -59,6 +71,7 @@ export class UsersService {
     const code = codeVerify();
     let user = await this.userModel.create({
       ...registerUserDto,
+      phone: '',
       status: false,
       codeExpired: Date.now() + 5 * 60 * 1000,
       code: code,
@@ -125,5 +138,37 @@ export class UsersService {
 
   isValidPassword(password: string, hashPassword: string) {
     return compareSync(password, hashPassword); // true
+  }
+  async updatePassword(updatePassword: UpdatePassword, user: IUser) {
+    const userDB = await this.userModel.findOne({
+      _id: user._id,
+    });
+
+    if (!userDB) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Compare the plain-text current password with the stored hashed password
+    const isPasswordValid = compareSync(
+      updatePassword.currentPassword,
+      userDB.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('Current password is not correct');
+    }
+
+    // Hash the new password
+    const hashNewPassword = this.getHashPassword(updatePassword.newPassword);
+
+    // Update the password in the database
+    const updateResult = await this.userModel.updateOne(
+      { _id: userDB._id },
+      { password: hashNewPassword },
+    );
+
+    return {
+      updateResult,
+    };
   }
 }

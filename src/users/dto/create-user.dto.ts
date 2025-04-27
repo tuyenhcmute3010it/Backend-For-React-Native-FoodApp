@@ -9,6 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import e from 'express';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'Name Khong duoc de trong' })
@@ -29,6 +30,7 @@ export class CreateUserDto {
     message: 'Password Khong duoc de trong',
   })
   password: string;
+  phone: string;
 }
 export class RegisterUserDto {
   @IsNotEmpty({ message: 'Name Khong duoc de trong' })
@@ -49,6 +51,7 @@ export class RegisterUserDto {
     message: 'Password Khong duoc de trong',
   })
   password: string;
+  phone: string;
 }
 export class VerifyCode {
   @IsEmail(
@@ -90,4 +93,10 @@ export class UserLoginDto {
     description: 'password',
   })
   readonly password: string;
+}
+export class UpdatePassword {
+  @IsNotEmpty()
+  currentPassword: string;
+  @IsNotEmpty()
+  newPassword: string;
 }
