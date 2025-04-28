@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  ForgotPassword,
   RegisterUserDto,
   VerifyCode,
   VerifyEmail,
@@ -99,5 +100,16 @@ export class AuthService {
         email: userDb.email,
       },
     };
+  }
+  async forgotPassword(forgotPassword: ForgotPassword) {
+    const userDB = await this.userModel.findOne({
+      email: forgotPassword.email,
+    });
+    if (forgotPassword.code === userDB.code) {
+      this.usersService.forgotPassword(forgotPassword);
+    } else {
+      throw new BadRequestException('Code not correct');
+    }
+    return 'Update Password Success';
   }
 }

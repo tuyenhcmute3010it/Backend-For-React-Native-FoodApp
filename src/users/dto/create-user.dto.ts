@@ -100,3 +100,11 @@ export class UpdatePassword {
   @IsNotEmpty()
   newPassword: string;
 }
+export class ForgotPassword {
+  @IsNotEmpty()
+  code: string;
+  @IsEmail()
+  email: string;
+  @IsNotEmpty()
+  password: string;
+}

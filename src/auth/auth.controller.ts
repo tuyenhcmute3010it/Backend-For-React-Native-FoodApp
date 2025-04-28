@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  ForgotPassword,
   RegisterUserDto,
   VerifyCode,
   VerifyEmail,
@@ -46,6 +47,12 @@ export class AuthController {
   @Post('/verify-email')
   verifyEmail(@Body() verifyEmail: VerifyEmail) {
     return this.authService.verifyEmail(verifyEmail);
+  }
+  @Public()
+  @ResponseMessage('Forgot Password')
+  @Post('/forgot-password')
+  forgotPassword(@Body() forgotPassword: ForgotPassword) {
+    return this.authService.forgotPassword(forgotPassword);
   }
   @Public()
   @UseGuards(LocalAuthGuard)

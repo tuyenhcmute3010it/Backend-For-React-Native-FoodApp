@@ -69,6 +69,8 @@ export class Restaurant {
 
   @Prop()
   deletedAt: Date;
+  @Prop()
+  isLike: boolean;
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);

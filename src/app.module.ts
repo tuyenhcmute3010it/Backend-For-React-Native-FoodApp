@@ -15,6 +15,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { MenusModule } from './menus/menus.module';
 import { MenuitemsModule } from './menuitems/menuitems.module';
 import { OrdersModule } from './orders/orders.module';
+import { LikesModule } from './likes/likes.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -45,6 +46,7 @@ import { OrdersModule } from './orders/orders.module';
     MenuitemsModule,
     MenuitemsModule,
     OrdersModule,
+    LikesModule,
   ],
   controllers: [AppController],
   providers: [

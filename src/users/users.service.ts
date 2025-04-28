@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CreateUserDto,
+  ForgotPassword,
   RegisterUserDto,
   UpdatePassword,
   VerifyCode,
@@ -139,6 +140,7 @@ export class UsersService {
   isValidPassword(password: string, hashPassword: string) {
     return compareSync(password, hashPassword); // true
   }
+
   async updatePassword(updatePassword: UpdatePassword, user: IUser) {
     const userDB = await this.userModel.findOne({
       _id: user._id,
@@ -167,6 +169,27 @@ export class UsersService {
       { password: hashNewPassword },
     );
 
+    return {
+      updateResult,
+    };
+  }
+  async forgotPassword(forgotPassword: ForgotPassword) {
+    const userDB = await this.userModel.findOne({
+      email: forgotPassword.email,
+    });
+
+    if (!userDB) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Hash the new password
+    const hashNewPassword = this.getHashPassword(forgotPassword.password);
+
+    // Update the password in the database
+    const updateResult = await this.userModel.updateOne(
+      { _id: userDB._id },
+      { password: hashNewPassword },
+    );
     return {
       updateResult,
     };
